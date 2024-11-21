@@ -2,12 +2,12 @@
 <!DOCTYPE html>
 <html>
 	<meta charser="UTF-8">
-	<title>no title</title>
+	<title>Consumer</title>
 	<body>
-		Wikimedia recent change producer:
+		Wikimedia recent change consuming:
 
 		<br>
-		<button id="consumerId">Start producing</button>
+		<button id="consumerId">Start Consume</button>
 		<div id="response"></div>
 
 		<script>

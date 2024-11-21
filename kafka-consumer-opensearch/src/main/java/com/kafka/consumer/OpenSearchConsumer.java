@@ -4,12 +4,16 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.errors.WakeupException;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.client.indices.GetIndexRequest;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -34,7 +38,6 @@ public class OpenSearchConsumer
         KafkaConsumer<String,String> consumer = openSearchUtil.getKafkaConsumer();
 
         String indexName = "wiki-media";
-       // indexName = "wiki-media-2";
 
         String topic="wikimedia.recentchanges";
 
@@ -42,11 +45,10 @@ public class OpenSearchConsumer
         {
             consumer.subscribe(Arrays.asList(topic));
             boolean isIndexExist =  client.indices().exists(new GetIndexRequest(indexName), RequestOptions.DEFAULT);
-
+            CreateIndexRequest createIndexRequest = new CreateIndexRequest(indexName);
 
             if(!isIndexExist)
             {
-                CreateIndexRequest createIndexRequest = new CreateIndexRequest(indexName);
                 client.indices().create(createIndexRequest, RequestOptions.DEFAULT);
                 logger.info("OpenSearch "+indexName+" index");
             }
@@ -85,15 +87,28 @@ public class OpenSearchConsumer
                     //  logger.info("Starting polling");
                     ConsumerRecords<String,String> datas = consumer.poll(Duration.ofMillis(1000));
 
-                    if(datas.isEmpty())
+                    if(!datas.isEmpty())
                     {
-                        logger.info("empty consume...");
-                    }
+                        for(ConsumerRecord<String,String> data:datas)
+                        {
+                            //To avoid duplicate result
+                            String id = OpenSearchUtil.getWikiDataUniqueId(data.value());
 
-                    for(ConsumerRecord<String,String> data:datas)
-                    {
-                        logger.info("key:"+data.key()+" value:"+data.value());
-                        logger.info("partition:"+data.partition()+" Offset:"+data.offset());
+                            logger.info("key:"+data.key()+" value:"+data.value() + " id:"+id);
+                            try
+                            {
+                                IndexRequest indexRequest = new IndexRequest(indexName)
+                                        .source(data.value(), XContentType.JSON).id(id);
+
+                                IndexResponse response = client.index(indexRequest,RequestOptions.DEFAULT);
+
+                                logger.info("Indexed resp id="+response.getId());
+                            }
+                            catch (Exception e)
+                            {
+                                logger.info(e.toString());
+                            }
+                        }
                     }
 
                 }

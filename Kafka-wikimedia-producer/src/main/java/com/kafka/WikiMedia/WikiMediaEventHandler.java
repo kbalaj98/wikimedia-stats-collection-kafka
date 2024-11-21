@@ -51,10 +51,10 @@ public class WikiMediaEventHandler implements EventHandler
     public void onMessage(String event, MessageEvent messageEvent) throws Exception
     {
         logger.info("producing message...");
-        producer.send(new ProducerRecord<>(topic,messageEvent.toString()));
+        producer.send(new ProducerRecord<>(topic,messageEvent.getData().toString()));
 
         logger.info(messageEvent.toString());
-        writer.println(messageEvent.toString());
+        writer.println(messageEvent.getData().toString());
     }
 
     @Override

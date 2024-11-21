@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
 	<meta charser="UTF-8">
-	<title>no title</title>
+	<title>Producer</title>
 	<body>
 		Wikimedia recent change producer:
 

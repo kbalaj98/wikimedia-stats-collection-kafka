@@ -1,19 +1,30 @@
 package com.kafka.consumer;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpHost;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.clients.consumer.internals.metrics.KafkaConsumerMetrics;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.util.Properties;
 
 @Component
 public class OpenSearchUtil
 {
+
+    public static String getWikiDataUniqueId(String value)throws IOException
+    {
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode node = objectMapper.readTree(value);
+
+        return node.get("meta").get("request_id").asText();
+    }
 
     public RestHighLevelClient getRestHighLevelClient()
     {
@@ -37,7 +48,7 @@ public class OpenSearchUtil
         prop.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         prop.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         prop.setProperty(ConsumerConfig.GROUP_ID_CONFIG,groupId);
-        prop.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,"earliest");
+        prop.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,"latest");
 
         return new KafkaConsumer<>(prop);
 
