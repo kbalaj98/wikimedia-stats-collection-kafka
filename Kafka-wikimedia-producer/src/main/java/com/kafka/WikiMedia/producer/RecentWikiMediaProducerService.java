@@ -24,7 +24,7 @@ public class RecentWikiMediaProducer
         this.res = res;
     }
 
-    public void produce(int min) throws Exception {
+    public synchronized void produce(int min) throws Exception {
 
 
         KafkaProducer<String,String> producer = KafkaProducerUtil.getProducer();

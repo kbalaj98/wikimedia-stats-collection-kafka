@@ -3,7 +3,6 @@ package com.kafka.WikiMedia;
 
 import com.kafka.WikiMedia.producer.RecentWikiMediaProducer;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.kafka.clients.producer.KafkaProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

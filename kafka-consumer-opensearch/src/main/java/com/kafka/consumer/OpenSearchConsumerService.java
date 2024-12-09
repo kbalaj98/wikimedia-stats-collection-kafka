@@ -4,6 +4,8 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.errors.WakeupException;
+import org.elasticsearch.action.bulk.BulkRequest;
+import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -89,26 +91,40 @@ public class OpenSearchConsumer
 
                     if(!datas.isEmpty())
                     {
+                        BulkRequest bulkRequest = new BulkRequest();
                         for(ConsumerRecord<String,String> data:datas)
                         {
                             //To avoid duplicate result
                             String id = OpenSearchUtil.getWikiDataUniqueId(data.value());
 
-                            logger.info("key:"+data.key()+" value:"+data.value() + " id:"+id);
+                           // logger.info("key:"+data.key()+" value:"+data.value() + " id:"+id);
                             try
                             {
                                 IndexRequest indexRequest = new IndexRequest(indexName)
                                         .source(data.value(), XContentType.JSON).id(id);
 
-                                IndexResponse response = client.index(indexRequest,RequestOptions.DEFAULT);
+                                bulkRequest.add(indexRequest);
 
-                                logger.info("Indexed resp id="+response.getId());
+                              //  IndexResponse response = client.index(indexRequest,RequestOptions.DEFAULT);
+
+                                //logger.info("Indexed resp id="+response.getId());
                             }
                             catch (Exception e)
                             {
                                 logger.info(e.toString());
                             }
                         }
+
+                        if(bulkRequest.numberOfActions()>0)
+                        {
+                            BulkResponse blkresponse = client.bulk(bulkRequest,RequestOptions.DEFAULT);
+                            logger.info("Bulk record inserted= "+blkresponse.getItems().length+ " record(s)");
+
+                            consumer.commitSync();
+                            logger.info("Offset commited size= "+datas.count());
+
+                        }
+
                     }
 
                 }
@@ -116,6 +132,14 @@ public class OpenSearchConsumer
             catch (WakeupException ex)
             {
                 logger.info("Consumer is starting to shutdown");
+            }
+            catch (Exception e)
+            {
+                logger.info("unexpected exception"+e);
+            }
+            finally {
+                consumer.close();
+                client.close();
             }
 
         }
