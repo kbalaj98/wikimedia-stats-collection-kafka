@@ -7,7 +7,6 @@ import org.apache.kafka.common.errors.WakeupException;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.CreateIndexRequest;
@@ -15,7 +14,6 @@ import org.elasticsearch.client.indices.GetIndexRequest;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.Marker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -24,9 +22,9 @@ import java.time.Duration;
 import java.util.Arrays;
 
 @Component
-public class OpenSearchConsumer
+public class OpenSearchConsumerService
 {
-    Logger logger = LoggerFactory.getLogger(OpenSearchConsumer.class);
+    Logger logger = LoggerFactory.getLogger(OpenSearchConsumerService.class);
 
     @Autowired
     OpenSearchUtil openSearchUtil;

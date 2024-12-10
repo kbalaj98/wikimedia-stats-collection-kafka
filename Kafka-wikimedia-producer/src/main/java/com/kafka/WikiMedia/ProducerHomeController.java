@@ -1,39 +1,46 @@
 package com.kafka.WikiMedia;
 
 
-import com.kafka.WikiMedia.producer.RecentWikiMediaProducer;
+import com.kafka.WikiMedia.producer.RecentWikiMediaProducerService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
-public class HomeController
+@RestController
+public class ProducerHomeController
 {
 
-    public final Logger logger = LoggerFactory.getLogger(HomeController.class.getSimpleName());
+    public final Logger logger = LoggerFactory.getLogger(ProducerHomeController.class.getSimpleName());
 
     @Autowired
-    RecentWikiMediaProducer wikiMediaProducer;
+    RecentWikiMediaProducerService wikiMediaProducer;
 
-    @RequestMapping("/")
-    public String home()
+    @PostMapping("wiki-media/producer/start")
+    public String StartProducing(HttpServletResponse res)throws Exception
     {
-        logger.info("Home page...");
 
-        return "index";
+        if(!wikiMediaProducer.isConsume())
+        {
+            wikiMediaProducer.setRes(res);
+            wikiMediaProducer.produce();
+        }
+
+        return "Producer  already started";
     }
 
-    @RequestMapping("/startProduce")
-    public void StartProducing(HttpServletResponse res)throws Exception
+    @PostMapping("wiki-media/producer/stop")
+    public String stopProducing()
     {
+        if(wikiMediaProducer.isConsume())
+        {
+            wikiMediaProducer.setConsume(false);
+            return "Producer stopped";
+        }
 
-//        RecentWikiMediaProducer wikiMediaProducer = new RecentWikiMediaProducer(res);
-
-        wikiMediaProducer.setRes(res);
-        wikiMediaProducer.produce(2);
+        return "Producer not found";
     }
 
 }

@@ -1,6 +1,9 @@
 package com.kafka.WikiMedia;
 
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.launchdarkly.eventsource.EventHandler;
 import com.launchdarkly.eventsource.MessageEvent;
 import jakarta.servlet.http.HttpServletResponse;
@@ -50,10 +53,23 @@ public class WikiMediaEventHandler implements EventHandler
     @Override
     public void onMessage(String event, MessageEvent messageEvent) throws Exception
     {
+        long time = System.currentTimeMillis();
         logger.info("producing message...");
-        producer.send(new ProducerRecord<>(topic,messageEvent.getData().toString()));
 
-        logger.info(messageEvent.toString());
+        String data = messageEvent.getData();
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode node = objectMapper.readTree(data);
+
+        String id = node.get("meta").get("id").asText();
+
+
+        ((ObjectNode)node).put("Produced_Time",time);
+
+        data = node.toString();
+
+        producer.send(new ProducerRecord<>(topic,id,data));
+
+        logger.info("key="+id+ "::: value="+data);
         writer.println(messageEvent.getData().toString());
     }
 

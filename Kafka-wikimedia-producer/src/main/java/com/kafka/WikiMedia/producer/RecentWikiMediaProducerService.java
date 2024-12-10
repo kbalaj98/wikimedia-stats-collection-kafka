@@ -6,17 +6,19 @@ import com.launchdarkly.eventsource.EventHandler;
 import com.launchdarkly.eventsource.EventSource;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.kafka.clients.producer.KafkaProducer;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
 
-@Component
-public class RecentWikiMediaProducer
+@Service
+public class RecentWikiMediaProducerService
 {
 
     HttpServletResponse res;
+
+    private volatile boolean isConsume = false;
 
     //setter injection
     public void setRes(HttpServletResponse res)
@@ -24,8 +26,10 @@ public class RecentWikiMediaProducer
         this.res = res;
     }
 
-    public synchronized void produce(int min) throws Exception {
+    public synchronized void produce() throws Exception
+    {
 
+        setConsume(true);
 
         KafkaProducer<String,String> producer = KafkaProducerUtil.getProducer();
 
@@ -38,14 +42,27 @@ public class RecentWikiMediaProducer
         EventSource.Builder builder = new EventSource.Builder(handler,URI.create(url));
 
         //start producer
-        EventSource source = builder.build();
+        try( EventSource source = builder.build();)
+        {
+            source.start();
 
-        source.start();
-
-        //main thread stop
-        TimeUnit.SECONDS.sleep(20);
-
-        source.close();
-
+            while(isConsume())
+            {
+                //main thread stop
+                TimeUnit.SECONDS.sleep(20);
+            }
+        }
     }
+
+
+    public boolean isConsume()
+    {
+        return isConsume;
+    }
+
+    public void setConsume(boolean consume)
+    {
+        isConsume = consume;
+    }
+
 }

@@ -13,7 +13,7 @@ public class ConsumerHomeController
 {
     Logger logger = LoggerFactory.getLogger(ConsumerHomeController.class);
     @Autowired
-    OpenSearchConsumer consumer;
+    OpenSearchConsumerService consumer;
 
     @RequestMapping("/")
     public String Homepage()

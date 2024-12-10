@@ -49,6 +49,7 @@ public class OpenSearchUtil
         prop.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         prop.setProperty(ConsumerConfig.GROUP_ID_CONFIG,groupId);
         prop.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,"latest");
+        prop.setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG,"false");
 
         return new KafkaConsumer<>(prop);
 

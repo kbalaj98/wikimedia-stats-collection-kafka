@@ -17,4 +17,15 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+    <dependencies>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.kafka/kafka-streams -->
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-streams</artifactId>
+            <version>3.1.0</version>
+        </dependency>
+
+    </dependencies>
+
 </project>
